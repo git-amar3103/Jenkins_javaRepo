@@ -1,25 +1,59 @@
+
 pipeline {
     agent any
 
-    stages {
+    tools {
+        jdk 'JDK17'
+        maven 'Maven3'
+    }
 
-        stage('Checkout') {
+    stages {
+        stage('GitHub Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/git-amar3103/Jenkins_WebRepo2.git'
+                    url: 'https://github.com/git-amar3103/Jenkins_javaRepo.git'
             }
         }
 
-        stage('Deploy') {
+        stage('Build') {
             steps {
-                sh '''
-                echo "Deploying application..."
-
-                 rm -rf /var/www/html/*
-                 cp -r * /var/www/html/
-                 '''
+                sh 'mvn clean compile'
             }
         }
 
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts(
+                    artifacts: '**/target/*.jar',
+                    fingerprint: true
+                )
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Java application built successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check Jenkins console output.'
+        }
     }
 }

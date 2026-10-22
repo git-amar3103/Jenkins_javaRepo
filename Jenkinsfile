@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -7,7 +8,7 @@ pipeline {
     }
 
     stages {
-        stage('GitHub Checkout') {
+        stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/git-amar3103/Jenkins_javaRepo.git'
@@ -18,41 +19,40 @@ pipeline {
             steps {
                 sh 'java -version'
                 sh 'mvn -version'
+                sh 'ls -l pom.xml'
             }
         }
 
-        stage('Build') {
+        stage('Build and Package') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Test') {
+        stage('Test Results') {
             steps {
-                sh 'mvn test'
+                junit allowEmptyResults: true,
+                      testResults: '**/target/surefire-reports/*.xml'
             }
         }
 
-        stage('Package') {
+        stage('Archive JAR') {
             steps {
-                sh 'mvn package -DskipTests'
-            }
-        }
-
-        stage('Archive Artifact') {
-            steps {
-                archiveArtifacts artifacts: '**/target/*.jar',
-                                 fingerprint: true
+                archiveArtifacts(
+                    artifacts: '**/target/*.jar',
+                    fingerprint: true,
+                    allowEmptyArchive: false
+                )
             }
         }
     }
 
     post {
         success {
-            echo 'Java application built successfully!'
+            echo 'Build successful. Check the archived artifact.'
         }
         failure {
-            echo 'Build failed. Check the console output.'
+            echo 'Build failed. Review Console Output.'
         }
     }
 }

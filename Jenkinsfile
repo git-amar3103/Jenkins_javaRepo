@@ -1,9 +1,8 @@
-
 pipeline {
     agent any
 
     tools {
-        jdk 'JDK17'
+        jdk 'JDK21'
         maven 'Maven3'
     }
 
@@ -12,6 +11,13 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/git-amar3103/Jenkins_javaRepo.git'
+            }
+        }
+
+        stage('Verify Tools') {
+            steps {
+                sh 'java -version'
+                sh 'mvn -version'
             }
         }
 
@@ -25,11 +31,6 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
         }
 
         stage('Package') {
@@ -40,10 +41,8 @@ pipeline {
 
         stage('Archive Artifact') {
             steps {
-                archiveArtifacts(
-                    artifacts: '**/target/*.jar',
-                    fingerprint: true
-                )
+                archiveArtifacts artifacts: '**/target/*.jar',
+                                 fingerprint: true
             }
         }
     }
@@ -53,7 +52,7 @@ pipeline {
             echo 'Java application built successfully!'
         }
         failure {
-            echo 'Pipeline failed. Check Jenkins console output.'
+            echo 'Build failed. Check the console output.'
         }
     }
 }

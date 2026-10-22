@@ -30,21 +30,21 @@ pipeline {
         }
 
         stage('Test Results') {
-            steps {
-                junit allowEmptyResults: true,
-                      testResults: '**/target/surefire-reports/*.xml'
-            }
-        }
+    steps {
+        junit allowEmptyResults: true,
+              testResults: '**/target/surefire-reports/*.xml'
+    }
+}
 
-        stage('Archive JAR') {
-            steps {
-                archiveArtifacts(
-                    artifacts: '**/target/*.jar',
-                    fingerprint: true,
-                    allowEmptyArchive: false
-                )
-            }
-        }
+stage('Archive Artifact') {
+    steps {
+        archiveArtifacts(
+            artifacts: '**/target/*.war',
+            fingerprint: true,
+            allowEmptyArchive: false
+        )
+    }
+}
     }
 
     post {
